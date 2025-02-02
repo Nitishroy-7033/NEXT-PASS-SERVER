@@ -19,6 +19,10 @@ namespace NextPassAPI.Data.Repositories
             return await _user.Find(user => user.Email == email).FirstOrDefaultAsync();
         }
 
+        public async Task<List<User>> GetAllUser()
+        {
+            return await _user.Find(user => true).ToListAsync();
+        }
         public async Task<User> CreateUser(User newUser)
         {
             await _user.InsertOneAsync(newUser);

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using NextPassAPI.Data.Models;
@@ -48,6 +49,9 @@ namespace NextPassAPI.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, errorResponse);
             }
         }
+
+
+
 
         [HttpPost("register")]
         public async Task<IActionResult> RegisterUser([FromBody] UserRequest userRequest)

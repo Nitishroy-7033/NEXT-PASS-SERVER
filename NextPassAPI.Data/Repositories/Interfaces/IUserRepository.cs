@@ -13,5 +13,6 @@ namespace NextPassAPI.Data.Repositories.Interfaces
         Task<User> CreateUser(User newUser);
         Task<bool> UpdateUser(User updatedUser);
         Task<bool> DeleteUser(string userId);
+        Task<List<User>> GetAllUser();
     }
 }
