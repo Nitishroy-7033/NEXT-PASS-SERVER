@@ -19,21 +19,7 @@ namespace NextPassAPI.Controllers
             _userService = userService;
         }
 
-        [HttpPost("user")]
-        public async Task<IActionResult> RegisterUser([FromBody] UserRequest userRequest)
-        {
-            try
-            {
-                var user = await _userService.CreateUser(userRequest);
-                var response = new ApiResponse<User>(true, "User created successfully", user);
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                var errorResponse = new ApiResponse<string>(false, "An error occurred while creating the user", ex.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError, errorResponse);
-            }
-        }
+
         [Authorize]
         [HttpGet("{email}")]
         public async Task<IActionResult> GetUserByEmail(string email)
@@ -97,5 +83,22 @@ namespace NextPassAPI.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, errorResponse);
             }
         }
+
+        [Authorize]
+        [HttpGet("users")]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            try
+            {
+                var users = await _userService.GetAllUser();
+                var response = new ApiResponse<List<User>>(true, "User get successfully", users);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = new ApiResponse<string>(false, "An error occurred while geting the user", ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, errorResponse);
+            }
+        }
     }
-    }
+}

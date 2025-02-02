@@ -13,25 +13,6 @@ namespace NextPassAPI.Services
 
             _userRepository = userRepository;
         }
-        public async Task<User> CreateUser(UserRequest userRequest)
-        {
-            var newUser = new User
-            {
-                Email = userRequest.Email,
-                HashedPassword = "",
-                FirstName = userRequest.FirstName,
-                LastName = userRequest.LastName,
-                CreatedAt = DateTime.UtcNow,
-                LastLogin = DateTime.UtcNow,
-                IsVerified = false,
-                IsDeleted = false,
-                Role="User"
-            };
-
-            return await _userRepository.CreateUser(newUser);
-        }
-      
-       
 
         public async Task<User> GetUserByEmail(string email)
         {
@@ -49,6 +30,10 @@ namespace NextPassAPI.Services
             return await _userRepository.DeleteUser(userId);
         }
 
-       
+        public async Task<List<User>> GetAllUser()
+        {
+            return await _userRepository.GetAllUser();
+        }
+
     }
 }
