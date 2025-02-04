@@ -13,7 +13,7 @@ using System.Text;
 
 namespace NextPassAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("Auth")]
     [ApiController]
     public class AuthController : ControllerBase
     {
@@ -22,7 +22,8 @@ namespace NextPassAPI.Controllers
         private readonly AuthHandler _authHandler;
         public AuthController(IAuthService authService, IConfiguration configuration,AuthHandler authHandler)
         {
-            _authService = authService;            _configuration = configuration;
+            _authService = authService;
+            _configuration = configuration;
             _authHandler = authHandler;
         }
 
