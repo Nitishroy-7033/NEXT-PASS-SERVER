@@ -19,12 +19,14 @@ namespace NextPassAPI.Controllers
     {
         private readonly IAuthService _authService;
         private readonly IConfiguration _configuration;
+        private readonly IUserService _userService;
         private readonly AuthHandler _authHandler;
-        public AuthController(IAuthService authService, IConfiguration configuration,AuthHandler authHandler)
+        public AuthController(IAuthService authService, IConfiguration configuration,AuthHandler authHandler, IUserService userService)
         {
             _authService = authService;
             _configuration = configuration;
             _authHandler = authHandler;
+            _userService = userService;
         }
 
 
@@ -59,6 +61,12 @@ namespace NextPassAPI.Controllers
         {
             try
             {
+                var existingUser = await _userService.GetUserByEmail(userRequest.Email);
+                if (existingUser != null)
+                {
+                    var emptyResponse = new ApiResponse<User>(false, "User with this email already exists", null);
+                    return BadRequest(emptyResponse);
+                }
                 var user = await _authService.RegisterUser(userRequest);
                 var response = new ApiResponse<User>(true, "User created successfully", user);
                 return Ok(response);

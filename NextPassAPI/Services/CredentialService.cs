@@ -22,8 +22,6 @@ namespace NextPassAPI.Services
         {
             var userId = _httpContextAccessor.HttpContext?.User
                .FindFirst("UserId")?.Value;
-            
-
             return await _credentialRepository.GetCredentialAsync(query,userId);
         }
 

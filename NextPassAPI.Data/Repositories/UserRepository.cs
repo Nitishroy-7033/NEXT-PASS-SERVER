@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using System.Text.RegularExpressions;
+using MongoDB.Driver;
 using NextPassAPI.Data.DbContexts;
 using NextPassAPI.Data.Models;
 using NextPassAPI.Data.Repositories.Interfaces;
@@ -16,7 +17,8 @@ namespace NextPassAPI.Data.Repositories
 
         public async Task<User> GetUserByEmail(string email)
         {
-            return await _user.Find(user => user.Email == email).FirstOrDefaultAsync();
+          return await _user.Find(user => Regex.IsMatch(user.Email, $"^{email}$", RegexOptions.IgnoreCase))
+                      .FirstOrDefaultAsync();
         }
 
         public async Task<List<User>> GetAllUser()

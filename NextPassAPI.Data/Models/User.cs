@@ -23,7 +23,9 @@ namespace NextPassAPI.Data.Models
         public string LastName { get; set; }
         public string UserName { get; set; }
         public string PhoneNumber { get; set; }
-        public string PasswordHash { get; set; }
+        public string? SecurityQuestion { get; set; }
+        public string? SecurityAnswer { get; set; }
+        public string? SecurityKey { get; set; }
         public bool IsVerified { get; set; }
         public DateTime? VerificationDate { get; set; }
         public DateTime? DateOfBirth { get; set; }
@@ -31,5 +33,7 @@ namespace NextPassAPI.Data.Models
         public DateTime UpdatedAt { get; set; }
         public string Role { get; set; }
         public bool IsDeleted { get; set; }
+        public bool IsTwoFactorEnabled { get; set; }  // new property
+        public string TwoFactorSecret { get; set; }  // new property
     }
 }
