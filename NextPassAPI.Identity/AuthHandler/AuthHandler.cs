@@ -26,6 +26,7 @@ public class AuthHandler
             new Claim(JwtRegisteredClaimNames.Sub, _jwtSettings.Subject),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim("UserId",user.Id.ToString()),
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.Role, user.Role),
         };

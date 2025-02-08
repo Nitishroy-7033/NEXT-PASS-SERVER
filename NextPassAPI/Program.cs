@@ -71,6 +71,7 @@ builder.Services.AddScoped(typeof(MongoDbContext<>));
 // Dependency Indejection
 builder.Services.AddServices();
 builder.Services.AddRepositories();
+builder.Services.AddHttpContextAccessor();
 var app = builder.Build();
 
 app.UseSwagger();

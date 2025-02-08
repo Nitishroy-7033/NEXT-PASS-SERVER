@@ -19,19 +19,19 @@ namespace NextPassAPI.Data.Repositories
             _credential = database.GetCollection();
         }
 
-        public async Task<CredenatialResponse> GetCredentialAsync(GetCredentialQuery query)
+        public async Task<CredenatialResponse> GetCredentialAsync(GetCredentialQuery query, string userId)
         {
             var filterBuilder = Builders<Credential>.Filter;
             var filters = new List<FilterDefinition<Credential>>();
+          
             if (!string.IsNullOrEmpty(query.CredenatialId))
                 filters.Add(filterBuilder.Eq(c => c.Id, query.CredenatialId));
             if (!string.IsNullOrEmpty(query.SiteUrl))
                 filters.Add(filterBuilder.Eq(c => c.SiteUrl, query.SiteUrl));
             if (!string.IsNullOrEmpty(query.EmailId))
                 filters.Add(filterBuilder.Eq(c => c.EmailId, query.EmailId));
-
+            filters.Add(filterBuilder.Eq(e => e.UserId, userId));
             var filter = filters.Count > 0 ? filterBuilder.And(filters) : filterBuilder.Empty;
-
             var totalCount = await _credential.CountDocumentsAsync(filter);
             var credentials = await _credential.Find(filter)
                                                .SortByDescending(c => c.CreatedAt)

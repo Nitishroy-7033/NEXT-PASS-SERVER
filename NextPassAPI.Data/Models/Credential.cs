@@ -19,6 +19,8 @@ namespace NextPassAPI.Data.Models
         public string Password { get; set; }
         public string? UserName { get; set; }
         public string? PhoneNumber { get; set; }
+        public string? UserId { get; set; }
+        public bool IsFavorite { get; set; } = false;
         public int PasswordChangeReminder { get; set; } = 30;
         public string? PasswordStrength { get; set; }
         public bool IsPasswordCompromised { get; set; } = false;
