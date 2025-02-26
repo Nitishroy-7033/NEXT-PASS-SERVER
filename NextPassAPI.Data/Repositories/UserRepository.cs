@@ -20,7 +20,10 @@ namespace NextPassAPI.Data.Repositories
           return await _user.Find(user => Regex.IsMatch(user.Email, $"^{email}$", RegexOptions.IgnoreCase))
                       .FirstOrDefaultAsync();
         }
-
+        public async Task<User> GetUserById(string id)
+        {
+            return await _user.Find(user => user.Id == id).FirstOrDefaultAsync();
+        }
         public async Task<List<User>> GetAllUser()
         {
             return await _user.Find(user => true).ToListAsync();

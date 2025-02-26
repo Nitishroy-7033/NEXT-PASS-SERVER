@@ -12,6 +12,7 @@ namespace NextPassAPI.Services
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ICredentialService, CredentialService>();
+            services.AddScoped<IPasswordHelperService, PasswordHelperService>();
 
         }
     }

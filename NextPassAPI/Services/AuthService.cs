@@ -5,6 +5,8 @@ using NextPassAPI.Data.Models.Requests;
 using NextPassAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using NextPassAPI.Identity.AuthHandler;
+using NextPassAPI.Data.Enums;
+using System.Security.Cryptography;
 namespace NextPassAPI.Services
 {
     public class AuthService : IAuthService
@@ -27,19 +29,31 @@ namespace NextPassAPI.Services
 
         public async Task<User> RegisterUser(UserRequest request)
         {
+            string key = GenerateSecureKey();
             var user = new User
             {
                 Email = request.Email,
                 HashedPassword = _authHandler.HashPassword(request.Password),
                 FirstName = request.FirstName,
                 LastName = request.LastName,
+                EncyptionKey = key,
                 CreatedAt = DateTime.UtcNow,
                 LastLogin = DateTime.UtcNow,
                 IsVerified = false,
                 IsDeleted = false,
-                Role = "User" // Default role
+                Role = "User",
             };
             return await _userRepository.CreateUser(user);
+        }
+
+        public static string GenerateSecureKey()
+        {
+            using (var rng = new RNGCryptoServiceProvider())
+            {
+                byte[] keyBytes = new byte[32]; // 32 bytes for AES-256
+                rng.GetBytes(keyBytes);
+                return Convert.ToBase64String(keyBytes);
+            }
         }
     }
 }

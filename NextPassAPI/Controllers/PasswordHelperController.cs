@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NextPassAPI.Identity.Utils;
+using NextPassAPI.Services.Interfaces;
+using System.Security.Cryptography;
 
 namespace NextPassAPI.Controllers
 {
@@ -8,33 +10,54 @@ namespace NextPassAPI.Controllers
     [ApiController]
     public class PasswordHelperController : ControllerBase
     {
-        private readonly EncryptionHelper _encryptionHelper;
-
-        public PasswordHelperController()
+        private readonly IPasswordHelperService _passwordHelperService;
+        public PasswordHelperController(IPasswordHelperService passwordHelperService)
         {
-            string secretKey = "bGz9H@pL!vXkQw3Y7dN#z2TfGmUoC6Rs";
-            _encryptionHelper = new EncryptionHelper(secretKey);
+            _passwordHelperService = passwordHelperService;
         }
 
         [HttpGet("encrypt")]
-        public IActionResult GetEncryptedPassword([FromQuery] string password)
+        public async Task<IActionResult> GetEncryptedPassword([FromQuery] string password)
         {
-            var response = _encryptionHelper.Encrypt(password);
-            return Ok(response);
+            try
+            {
+                var response = await _passwordHelperService.GetEncryptedPassword(password);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
         }
 
         [HttpGet("decrypt")]
-        public IActionResult GetDecryptedPassword([FromQuery] string encryptedPassword)
+        public async Task<IActionResult> GetDecryptedPassword([FromQuery] string encryptedPassword)
         {
-            var response = _encryptionHelper.Decrypt(encryptedPassword);
-            return Ok(response);
+            try
+            {
+                var response = await _passwordHelperService.GetDecryptedPassword(encryptedPassword);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
         }
 
         [HttpGet("generate-key")]
         public IActionResult GenerateUserKey()
         {
-            var key = EncryptionHelper.GenerateSecureKey();
+            var key = GenerateSecureKey();
             return Ok(key);
+        }
+        public static string GenerateSecureKey()
+        {
+            using (var rng = new RNGCryptoServiceProvider())
+            {
+                byte[] keyBytes = new byte[32]; // 32 bytes for AES-256
+                rng.GetBytes(keyBytes);
+                return Convert.ToBase64String(keyBytes);
+            }
         }
     }
 }

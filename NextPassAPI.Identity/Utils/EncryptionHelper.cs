@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace NextPassAPI.Identity.Utils
 {
@@ -11,19 +9,14 @@ namespace NextPassAPI.Identity.Utils
     {
         private readonly byte[] encryptionKey;
 
-        public EncryptionHelper(string key)
+        public EncryptionHelper(string base64Key)
         {
-            encryptionKey = Encoding.UTF8.GetBytes(key);
+            encryptionKey = Convert.FromBase64String(base64Key);
+
+            if (encryptionKey.Length != 32) // Ensure it's 256-bit (AES-256)
+                throw new ArgumentException("Invalid key length. Expected 32 bytes.");
         }
-        public static string GenerateSecureKey()
-        {
-            using (var rng = new RNGCryptoServiceProvider())
-            {
-                byte[] keyBytes = new byte[32]; // 32 bytes for AES-256
-                rng.GetBytes(keyBytes);
-                return Convert.ToBase64String(keyBytes);
-            }
-        }
+
         public string Encrypt(string plainText)
         {
             using (Aes aes = Aes.Create())
@@ -31,18 +24,20 @@ namespace NextPassAPI.Identity.Utils
                 aes.Key = encryptionKey;
                 aes.Mode = CipherMode.CBC;
                 aes.Padding = PaddingMode.PKCS7;
-                aes.GenerateIV();
+                aes.GenerateIV(); // Generates IV for this encryption session
 
                 using (MemoryStream ms = new MemoryStream())
                 {
-                    ms.Write(aes.IV, 0, aes.IV.Length);
+                    ms.Write(aes.IV, 0, aes.IV.Length); // Store IV at start
+
                     using (CryptoStream cs = new CryptoStream(ms, aes.CreateEncryptor(), CryptoStreamMode.Write))
                     {
                         byte[] inputBytes = Encoding.UTF8.GetBytes(plainText);
                         cs.Write(inputBytes, 0, inputBytes.Length);
                         cs.FlushFinalBlock();
                     }
-                    return Convert.ToBase64String(ms.ToArray());
+
+                    return Convert.ToBase64String(ms.ToArray()); // Return IV + Cipher
                 }
             }
         }
@@ -50,6 +45,7 @@ namespace NextPassAPI.Identity.Utils
         public string Decrypt(string encryptedText)
         {
             byte[] encryptedBytes = Convert.FromBase64String(encryptedText);
+
             using (Aes aes = Aes.Create())
             {
                 aes.Key = encryptionKey;
@@ -61,6 +57,7 @@ namespace NextPassAPI.Identity.Utils
                     byte[] iv = new byte[16];
                     ms.Read(iv, 0, iv.Length);
                     aes.IV = iv;
+
                     using (CryptoStream cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Read))
                     {
                         using (StreamReader reader = new StreamReader(cs))
@@ -69,6 +66,16 @@ namespace NextPassAPI.Identity.Utils
                         }
                     }
                 }
+            }
+        }
+
+        public static string GenerateSecureKey()
+        {
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                byte[] keyBytes = new byte[32]; // 256-bit key for AES-256
+                rng.GetBytes(keyBytes);
+                return Convert.ToBase64String(keyBytes); // Store as Base64
             }
         }
     }

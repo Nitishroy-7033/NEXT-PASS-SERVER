@@ -3,6 +3,7 @@ using NextPassAPI.Data.Models.Query;
 using NextPassAPI.Data.Models.Requests;
 using NextPassAPI.Data.Models.Responses;
 using NextPassAPI.Data.Repositories.Interfaces;
+using NextPassAPI.Identity.Utils;
 using NextPassAPI.Services.Interfaces;
 using System.Security.Claims;
 
@@ -12,9 +13,13 @@ namespace NextPassAPI.Services
     {
         private readonly ICredentialRepository _credentialRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public CredentialService(ICredentialRepository credentialRepository, IHttpContextAccessor httpContextAccessor)
+        private readonly IUserRepository _userRepository;
+        public CredentialService(ICredentialRepository credentialRepository, IHttpContextAccessor httpContextAccessor,
+            IUserRepository userRepository
+            )
         {
             _credentialRepository = credentialRepository;
+            _userRepository = userRepository;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -30,7 +35,9 @@ namespace NextPassAPI.Services
         {
             var userId = _httpContextAccessor.HttpContext?.User
                 .FindFirst("UserId")?.Value;
-
+            User user = await _userRepository.GetUserById(userId);
+            var passwordHelper = new EncryptionHelper(user.EncyptionKey);
+            var encryptedPassword = passwordHelper.Encrypt(credentialRequest.Password);
             if (string.IsNullOrEmpty(userId))
             {
                 throw new UnauthorizedAccessException("User ID not found in token.");
@@ -40,7 +47,7 @@ namespace NextPassAPI.Services
                 UserId = userId,
                 SiteUrl = credentialRequest.SiteUrl,
                 EmailId = credentialRequest.EmailId,
-                Password = credentialRequest.Password,
+                Password = encryptedPassword,
                 PhoneNumber = credentialRequest.PhoneNumber,
                 IsPasswordCompromised = false,
                 UserName = credentialRequest.UserName,
