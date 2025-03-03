@@ -18,6 +18,10 @@ namespace NextPassAPI.Services
         {
             return await _userRepository.GetUserByEmail(email);
         }
+        public async Task<User> GetUserById(string id)
+        {
+            return await _userRepository.GetUserById(id);
+        }
 
         public async Task<bool> UpdateUser(User updatedUser)
         {

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace NextPassAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("User")]
     [ApiController]
     public class UserController : ControllerBase
     {
