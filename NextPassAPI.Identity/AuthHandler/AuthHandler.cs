@@ -29,6 +29,7 @@ public class AuthHandler
             new Claim("UserId",user.Id.ToString()),
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.Role,user.Role.ToString() ),
+
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));

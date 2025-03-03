@@ -21,6 +21,7 @@ namespace NextPassAPI.Controllers
             _credentialService = credentialService;
         }
 
+
         
         [HttpGet]
         public async Task<IActionResult> GetCredentials([FromQuery] GetCredentialQuery query)

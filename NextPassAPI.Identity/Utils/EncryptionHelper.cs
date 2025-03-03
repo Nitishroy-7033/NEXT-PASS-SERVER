@@ -11,6 +11,7 @@ namespace NextPassAPI.Identity.Utils
 
         public EncryptionHelper(string base64Key)
         {
+
             encryptionKey = Convert.FromBase64String(base64Key);
 
             if (encryptionKey.Length != 32) // Ensure it's 256-bit (AES-256)

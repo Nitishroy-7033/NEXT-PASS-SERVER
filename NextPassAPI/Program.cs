@@ -73,7 +73,10 @@ builder.Services.AddServices();
 builder.Services.AddRepositories();
 builder.Services.AddHttpContextAccessor();
 var app = builder.Build();
-
+app.UseCors(policy => policy
+    .AllowAnyOrigin()
+    .AllowAnyMethod()
+    .AllowAnyHeader());
 app.UseSwagger();
 app.UseSwaggerUI();
 
