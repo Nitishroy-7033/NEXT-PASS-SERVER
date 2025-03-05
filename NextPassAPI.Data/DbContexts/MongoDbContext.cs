@@ -1,29 +1,31 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Authentication;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Xsl;
 
 namespace NextPassAPI.Data.DbContexts
 {
     public class MongoDbContext<T>
     {
+        private readonly IMongoClient _client;
         private readonly IMongoDatabase _database;
 
-        public MongoDbContext(IOptions<MongoDbConfigs> mongoDBSettings)
+        public MongoDbContext(IOptions<MongoDbConfigs> mongoDBSettings, string? userConnectionString = null, string? userDatabaseName = null)
         {
-            var connectionString = mongoDBSettings?.Value.ConnectionString;
+            string connectionString = userConnectionString ?? mongoDBSettings.Value.ConnectionString;
+            string databaseName = userDatabaseName ?? mongoDBSettings.Value.DatabaseName;
+
+            _client = CreateMongoClient(connectionString);
+            _database = _client.GetDatabase(databaseName);
+        }
+
+        private IMongoClient CreateMongoClient(string connectionString)
+        {
             try
             {
                 var clientSettings = MongoClientSettings.FromConnectionString(connectionString);
                 clientSettings.SslSettings = new SslSettings { EnabledSslProtocols = SslProtocols.Tls12 };
-
-                var client = new MongoClient(clientSettings);
-                _database = client.GetDatabase(mongoDBSettings.Value.DatabaseName);
+                return new MongoClient(clientSettings);
             }
             catch (TimeoutException ex)
             {
@@ -35,19 +37,13 @@ namespace NextPassAPI.Data.DbContexts
             }
         }
 
-        public IMongoCollection<T> GetCollection()
-        {
-            var collectionName = Pluralize(typeof(T).Name);
-            return _database.GetCollection<T>(collectionName);
-        }
+        public IMongoCollection<T> GetCollection() => _database.GetCollection<T>(GetCollectionName(typeof(T).Name));
 
-        private string Pluralize(string name)
+        private static string GetCollectionName(string entityName)
         {
-            if (name.EndsWith("y", StringComparison.OrdinalIgnoreCase))
-            {
-                return name.Substring(0, name.Length - 1) + "ies";
-            }
-            return name + "s";
+            return entityName.EndsWith("y", StringComparison.OrdinalIgnoreCase)
+                ? entityName.Substring(0, entityName.Length - 1) + "ies"
+                : entityName + "s";
         }
     }
 }

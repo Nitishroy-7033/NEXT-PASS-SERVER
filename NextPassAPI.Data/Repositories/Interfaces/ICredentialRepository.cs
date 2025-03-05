@@ -11,8 +11,8 @@ namespace NextPassAPI.Data.Repositories.Interfaces
 {
     public interface ICredentialRepository
     {
-        Task<CredenatialResponse> GetCredentialAsync(GetCredentialQuery query,string userId);
-        Task<Credential> CreateCredentialAsnyc(Credential newCredential);
+        Task<CredenatialResponse> GetCredentialAsync(GetCredentialQuery query);
+        Task<Credential> CreateCredentialAsync(Credential newCredential);
         Task<bool> UpdateCredentialAsync(Credential updatedCredential);
         Task<bool> DeleteCredentialAsync(string credentialId);
 

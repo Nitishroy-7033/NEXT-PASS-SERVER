@@ -1,4 +1,5 @@
 ﻿using NextPassAPI.Data.Models;
+using NextPassAPI.Data.Models.Requests;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,5 +16,6 @@ namespace NextPassAPI.Data.Repositories.Interfaces
         Task<bool> DeleteUser(string userId);
         Task<List<User>> GetAllUser();
         Task<User> GetUserById(string id);
+        Task<User> UpdateDatabaseSettings(string id, DatabaseUpdateRequest databaseUpdateRequest);
     }
 }

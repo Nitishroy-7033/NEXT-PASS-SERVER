@@ -2,6 +2,7 @@
 using MongoDB.Driver;
 using NextPassAPI.Data.DbContexts;
 using NextPassAPI.Data.Models;
+using NextPassAPI.Data.Models.Requests;
 using NextPassAPI.Data.Repositories.Interfaces;
 
 namespace NextPassAPI.Data.Repositories
@@ -45,5 +46,20 @@ namespace NextPassAPI.Data.Repositories
             var result = await _user.DeleteOneAsync(u => u.Id == userId);
             return result.IsAcknowledged && result.DeletedCount > 0;
         }
+
+        public async Task<User> UpdateDatabaseSettings(string id, DatabaseUpdateRequest databaseUpdateRequest)
+        {
+            var update = Builders<User>.Update
+                .Set(u => u.DatabaseString, databaseUpdateRequest.DatabaseString)
+                .Set(u => u.DataBaseType, databaseUpdateRequest.DataBaseType);
+
+            var options = new FindOneAndUpdateOptions<User>
+            {
+                ReturnDocument = ReturnDocument.After 
+            };
+
+            return await _user.FindOneAndUpdateAsync(u => u.Id == id, update, options);
+        }
+
     }
 }

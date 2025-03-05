@@ -3,15 +3,21 @@ using NextPassAPI.Data.Models;
 using NextPassAPI.Data.Repositories.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using NextPassAPI.Services.Interfaces;
+using Microsoft.Extensions.Options;
+using NextPassAPI.Data.DbContexts;
 
 namespace NextPassAPI.Services
 {
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-        public UserService(IUserRepository userRepository) {
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IOptions<MongoDbConfigs> _mongoDBSettings;
+        public UserService(IUserRepository userRepository, IHttpContextAccessor httpContextAccessor, IOptions<MongoDbConfigs> mongoDBSettings) {
 
             _userRepository = userRepository;
+            _httpContextAccessor = httpContextAccessor;
+            _mongoDBSettings = mongoDBSettings;
         }
 
         public async Task<User> GetUserByEmail(string email)
@@ -37,6 +43,17 @@ namespace NextPassAPI.Services
         public async Task<List<User>> GetAllUser()
         {
             return await _userRepository.GetAllUser();
+        }
+
+      public async  Task<User> UpdateDatabaseSettings(DatabaseUpdateRequest databaseUpdateRequest)
+        {
+            var userId = _httpContextAccessor.HttpContext?.User
+               .FindFirst("UserId")?.Value;
+            if(databaseUpdateRequest.DataBaseType=="NEXT_PASS")
+            {
+                databaseUpdateRequest.DatabaseString = _mongoDBSettings.Value.ConnectionString;
+            }
+                return await _userRepository.UpdateDatabaseSettings(userId, databaseUpdateRequest);
         }
 
     }
