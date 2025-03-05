@@ -123,5 +123,27 @@ namespace NextPassAPI.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, errorResponse);
             }
         }
+
+        [Authorize]
+        [HttpPut("update-password")]
+        public async Task<IActionResult> UpdatePassword([FromQuery]string oldPassword, [FromQuery]string newPassword)
+        {
+            try
+            {
+                var response = await _userService.UpdatePassword(oldPassword, newPassword);
+                if(response)
+                {
+                    return Ok(new ApiResponse<bool>(true, "Password Updated", data: response));
+                }
+                else
+                {
+                    return BadRequest(new ApiResponse<bool>(false, "Old password and new password not match", data: response));
+                }
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(new ApiResponse<bool>(false, ex.Message, data: false));
+            }
+        }
     }
 }

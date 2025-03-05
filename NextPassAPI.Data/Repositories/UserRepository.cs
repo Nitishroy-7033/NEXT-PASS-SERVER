@@ -25,6 +25,18 @@ namespace NextPassAPI.Data.Repositories
         {
             return await _user.Find(user => user.Id == id).FirstOrDefaultAsync();
         }
+        public async Task<User> ChangePassword(string userId, string newHashedPassword)
+        {
+            var update = Builders<User>.Update
+                .Set(u => u.HashedPassword, newHashedPassword);
+            var options = new FindOneAndUpdateOptions<User>
+            {
+                ReturnDocument = ReturnDocument.After
+            };
+            var result = await _user.FindOneAndUpdateAsync(u => u.Id == userId, update, options);
+            return result ;
+        }
+
         public async Task<List<User>> GetAllUser()
         {
             return await _user.Find(user => true).ToListAsync();

@@ -17,5 +17,6 @@ namespace NextPassAPI.Data.Repositories.Interfaces
         Task<List<User>> GetAllUser();
         Task<User> GetUserById(string id);
         Task<User> UpdateDatabaseSettings(string id, DatabaseUpdateRequest databaseUpdateRequest);
+        Task<User> ChangePassword(string userId, string newHashedPassword);
     }
 }

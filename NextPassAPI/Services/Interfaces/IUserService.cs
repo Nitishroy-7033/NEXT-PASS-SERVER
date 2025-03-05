@@ -10,5 +10,6 @@ namespace NextPassAPI.Services.Interfaces
         Task<bool> DeleteUser(string userId);
         Task<List<User>> GetAllUser();
         Task<User> UpdateDatabaseSettings(DatabaseUpdateRequest databaseUpdateRequest);
+        Task<bool> UpdatePassword(string oldPassword, string newPassword);
     }
 }
