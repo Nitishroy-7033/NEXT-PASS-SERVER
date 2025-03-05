@@ -41,7 +41,6 @@ namespace NextPassAPI.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, errorResponse);
             }
         }
-
         [HttpPut]
         public async Task<IActionResult> UpdateUser([FromBody] User updatedUser)
         {
@@ -98,6 +97,52 @@ namespace NextPassAPI.Controllers
             {
                 var errorResponse = new ApiResponse<string>(false, "An error occurred while geting the user", ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, errorResponse);
+            }
+        }
+
+        [Authorize]
+        [HttpPut("database-settings")]
+        public async Task<IActionResult> UpdateDatabaseSettings([FromBody] DatabaseUpdateRequest databaseUpdateRequest)
+        {
+            try
+            {
+                if (databaseUpdateRequest != null && databaseUpdateRequest.DataBaseType != null)
+                {
+                    var response = await _userService.UpdateDatabaseSettings(databaseUpdateRequest);
+                      return Ok(new ApiResponse<User>(true, "Database settings updated successfully", data:response));
+                 }
+                else
+                {
+                    var errorResponse = new ApiResponse<string>(false, "Database settings not updated", "Database type is required");
+                    return BadRequest(errorResponse);
+                }
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = new ApiResponse<string>(false, "An error occurred while updating the user", ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, errorResponse);
+            }
+        }
+
+        [Authorize]
+        [HttpPut("update-password")]
+        public async Task<IActionResult> UpdatePassword([FromQuery]string oldPassword, [FromQuery]string newPassword)
+        {
+            try
+            {
+                var response = await _userService.UpdatePassword(oldPassword, newPassword);
+                if(response)
+                {
+                    return Ok(new ApiResponse<bool>(true, "Password Updated", data: response));
+                }
+                else
+                {
+                    return BadRequest(new ApiResponse<bool>(false, "Old password and new password not match", data: response));
+                }
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(new ApiResponse<bool>(false, ex.Message, data: false));
             }
         }
     }

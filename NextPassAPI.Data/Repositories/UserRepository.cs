@@ -2,6 +2,7 @@
 using MongoDB.Driver;
 using NextPassAPI.Data.DbContexts;
 using NextPassAPI.Data.Models;
+using NextPassAPI.Data.Models.Requests;
 using NextPassAPI.Data.Repositories.Interfaces;
 
 namespace NextPassAPI.Data.Repositories
@@ -24,6 +25,18 @@ namespace NextPassAPI.Data.Repositories
         {
             return await _user.Find(user => user.Id == id).FirstOrDefaultAsync();
         }
+        public async Task<User> ChangePassword(string userId, string newHashedPassword)
+        {
+            var update = Builders<User>.Update
+                .Set(u => u.HashedPassword, newHashedPassword);
+            var options = new FindOneAndUpdateOptions<User>
+            {
+                ReturnDocument = ReturnDocument.After
+            };
+            var result = await _user.FindOneAndUpdateAsync(u => u.Id == userId, update, options);
+            return result ;
+        }
+
         public async Task<List<User>> GetAllUser()
         {
             return await _user.Find(user => true).ToListAsync();
@@ -45,5 +58,20 @@ namespace NextPassAPI.Data.Repositories
             var result = await _user.DeleteOneAsync(u => u.Id == userId);
             return result.IsAcknowledged && result.DeletedCount > 0;
         }
+
+        public async Task<User> UpdateDatabaseSettings(string id, DatabaseUpdateRequest databaseUpdateRequest)
+        {
+            var update = Builders<User>.Update
+                .Set(u => u.DatabaseString, databaseUpdateRequest.DatabaseString)
+                .Set(u => u.DataBaseType, databaseUpdateRequest.DataBaseType);
+
+            var options = new FindOneAndUpdateOptions<User>
+            {
+                ReturnDocument = ReturnDocument.After 
+            };
+
+            return await _user.FindOneAndUpdateAsync(u => u.Id == id, update, options);
+        }
+
     }
 }
