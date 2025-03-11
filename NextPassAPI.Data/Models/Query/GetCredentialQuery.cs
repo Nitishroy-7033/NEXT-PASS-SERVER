@@ -9,6 +9,8 @@ namespace NextPassAPI.Data.Models.Query
     public class GetCredentialQuery
     {
         public string? CredenatialId { get; set; }
+        public string? Title { get; set; }
+        public string? SortBy { get; set; }
         public string? SiteUrl { get; set; }
         public string? EmailId { get; set; }
         public int? CurrentPage { get; set; }
