@@ -1,4 +1,5 @@
-﻿using NextPassAPI.Data.Models;
+﻿using NextPassAPI.Data.Enums;
+using NextPassAPI.Data.Models;
 using NextPassAPI.Data.Models.Query;
 using NextPassAPI.Data.Models.Requests;
 using NextPassAPI.Data.Models.Responses;
@@ -35,15 +36,18 @@ namespace NextPassAPI.Services
 
             if (string.IsNullOrEmpty(userId))
                 throw new UnauthorizedAccessException("User ID not found in token.");
-
             var user = await _userRepository.GetUserById(userId);
             var passwordHelper = new EncryptionHelper(user.EncyptionKey);
             var encryptedPassword = passwordHelper.Encrypt(credentialRequest.Password);
-
+             
             var newCredential = new Credential
             {
                 UserId = userId,
+                Title = credentialRequest.Title ?? credentialRequest.EmailId,
+                PasswordChangeReminder = credentialRequest.PasswordChangeReminder,
+                PasswordStrength = credentialRequest.PasswordStrength ?? "weak",
                 SiteUrl = credentialRequest.SiteUrl,
+                Category=credentialRequest.Category,
                 EmailId = credentialRequest.EmailId,
                 Password = encryptedPassword,
                 PhoneNumber = credentialRequest.PhoneNumber,
@@ -51,6 +55,7 @@ namespace NextPassAPI.Services
                 UserName = credentialRequest.UserName,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
+                
             };
 
             return await _credentialRepository.CreateCredentialAsync(newCredential);
@@ -77,5 +82,7 @@ namespace NextPassAPI.Services
         {
             return await _credentialRepository.DeleteCredentialAsync(credentialId);
         }
+
+
     }
 }

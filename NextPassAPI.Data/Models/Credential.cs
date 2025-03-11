@@ -15,6 +15,7 @@ namespace NextPassAPI.Data.Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
         public string SiteUrl { get; set; }
+        public string Title {  get; set; }
         public string? EmailId { get; set; }
         public string Password { get; set; }
         public string? UserName { get; set; }
@@ -22,7 +23,7 @@ namespace NextPassAPI.Data.Models
         public string UserId { get; set; }
         public bool IsFavorite { get; set; } = false;
         public int PasswordChangeReminder { get; set; } = 30;
-        public PasswordStrength PasswordStrength { get; set; } = PasswordStrength.Weak;
+        public string PasswordStrength { get; set; } = "weak";
         public bool IsPasswordCompromised { get; set; } = false;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

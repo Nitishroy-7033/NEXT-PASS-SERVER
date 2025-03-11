@@ -106,23 +106,23 @@ namespace NextPassAPI.Controllers
         {
             try
             {
-                if (databaseUpdateRequest != null && databaseUpdateRequest.DataBaseType != null)
+                if (databaseUpdateRequest != null && !string.IsNullOrEmpty(databaseUpdateRequest.DataBaseType))
                 {
                     var response = await _userService.UpdateDatabaseSettings(databaseUpdateRequest);
-                      return Ok(new ApiResponse<User>(true, "Database settings updated successfully", data:response));
-                 }
+                    return Ok(new ApiResponse<User>(true, "Database settings updated successfully", response));
+                }
                 else
                 {
-                    var errorResponse = new ApiResponse<string>(false, "Database settings not updated", "Database type is required");
-                    return BadRequest(errorResponse);
+                    return BadRequest(new ApiResponse<string>(false, "Database settings not updated", "Database type is required"));
                 }
             }
             catch (Exception ex)
             {
-                var errorResponse = new ApiResponse<string>(false, "An error occurred while updating the user", ex.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError, errorResponse);
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new ApiResponse<string>(false, "An error occurred while updating the database settings", ex.Message));
             }
         }
+
 
         [Authorize]
         [HttpPut("update-password")]

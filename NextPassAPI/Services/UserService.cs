@@ -6,6 +6,7 @@ using NextPassAPI.Services.Interfaces;
 using Microsoft.Extensions.Options;
 using NextPassAPI.Data.DbContexts;
 using NextPassAPI.Identity.AuthHandler;
+using MongoDB.Driver;
 
 namespace NextPassAPI.Services
 {
@@ -48,16 +49,29 @@ namespace NextPassAPI.Services
             return await _userRepository.GetAllUser();
         }
 
-      public async  Task<User> UpdateDatabaseSettings(DatabaseUpdateRequest databaseUpdateRequest)
+        public async Task<User> UpdateDatabaseSettings(DatabaseUpdateRequest databaseUpdateRequest)
         {
-            var userId = _httpContextAccessor.HttpContext?.User
-               .FindFirst("UserId")?.Value;
-            if(databaseUpdateRequest.DataBaseType=="NEXT_PASS")
+            var userId = _httpContextAccessor.HttpContext?.User.FindFirst("UserId")?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new UnauthorizedAccessException("User ID not found.");
+            }
+
+            if (databaseUpdateRequest.DataBaseType == "NEXT_PASS")
             {
                 databaseUpdateRequest.DatabaseString = _mongoDBSettings.Value.ConnectionString;
             }
-                return await _userRepository.UpdateDatabaseSettings(userId, databaseUpdateRequest);
+            else if (databaseUpdateRequest.DataBaseType == "USER")
+            {
+                if (!IsValidMongoDbConnection(databaseUpdateRequest.DatabaseString))
+                {
+                    throw new Exception("Invalid MongoDB connection string.");
+                }
+            }
+
+            return await _userRepository.UpdateDatabaseSettings(userId, databaseUpdateRequest);
         }
+
 
         public async Task<bool> UpdatePassword(string oldPassword,string newPassword)
         {
@@ -84,6 +98,21 @@ namespace NextPassAPI.Services
 
 
         }
+
+        private bool IsValidMongoDbConnection(string connectionString)
+        {
+            try
+            {
+                var client = new MongoClient(connectionString);
+                client.ListDatabaseNames(); // Test connection
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
 
     }
 }

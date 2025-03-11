@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using NextPassAPI.Data.DbContexts;
 using NextPassAPI.Data.Models;
@@ -63,10 +64,12 @@ namespace NextPassAPI.Data.Repositories
 
             if (!string.IsNullOrEmpty(query.CredenatialId))
                 filters.Add(filterBuilder.Eq(c => c.Id, query.CredenatialId));
+            if (!string.IsNullOrEmpty(query.Title))
+                filters.Add(filterBuilder.Regex(c => c.Title, new BsonRegularExpression(query.Title, "i")));
             if (!string.IsNullOrEmpty(query.SiteUrl))
-                filters.Add(filterBuilder.Eq(c => c.SiteUrl, query.SiteUrl));
+                filters.Add(filterBuilder.Regex(c => c.SiteUrl, new BsonRegularExpression(query.SiteUrl, "i")));
             if (!string.IsNullOrEmpty(query.EmailId))
-                filters.Add(filterBuilder.Eq(c => c.EmailId, query.EmailId));
+                filters.Add(filterBuilder.Regex(c => c.EmailId, new BsonRegularExpression(query.EmailId, "i")));
 
             filters.Add(filterBuilder.Eq(e => e.UserId, _user.Id));
 
