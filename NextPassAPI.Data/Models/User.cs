@@ -10,6 +10,7 @@ using NextPassAPI.Data.Enums;
 
 namespace NextPassAPI.Data.Models
 {
+    [BsonIgnoreExtraElements]
     public class User
     {
         [BsonId]
@@ -36,6 +37,9 @@ namespace NextPassAPI.Data.Models
         public string Role { get; set; } 
         public bool IsDeleted { get; set; } = false;
         public bool IsTwoFactorEnabled { get; set; } = false; // new property
+        public string AccountStatus { get; set; } = "Active"; // new property
+        public string AccountSetupStatus { get; set; } = "AccountCreated";
+        public int MPINumber { get; set; }
         public string? TwoFactorSecret { get; set; }   // new property
         public string? DatabaseString { get; set; } 
         public string? DataBaseType { get; set; } = "NEXT_PASS";

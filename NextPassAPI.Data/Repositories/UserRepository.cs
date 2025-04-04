@@ -63,13 +63,13 @@ namespace NextPassAPI.Data.Repositories
         {
             var update = Builders<User>.Update
                 .Set(u => u.DatabaseString, databaseUpdateRequest.DatabaseString)
-                .Set(u => u.DataBaseType, databaseUpdateRequest.DataBaseType);
-
+                .Set(u => u.DataBaseType, databaseUpdateRequest.DataBaseType)
+                .Set(u=> u.UpdatedAt, DateTime.UtcNow)
+                .Set(u => u.AccountSetupStatus, "DatabaseSettingsUpdated");
             var options = new FindOneAndUpdateOptions<User>
             {
                 ReturnDocument = ReturnDocument.After 
             };
-
             return await _user.FindOneAndUpdateAsync(u => u.Id == id, update, options);
         }
 

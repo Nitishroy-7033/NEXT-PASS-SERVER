@@ -39,7 +39,7 @@ namespace NextPassAPI.Services
             var user = await _userRepository.GetUserById(userId);
             var passwordHelper = new EncryptionHelper(user.EncyptionKey);
             var encryptedPassword = passwordHelper.Encrypt(credentialRequest.Password);
-             
+
             var newCredential = new Credential
             {
                 UserId = userId,
@@ -47,7 +47,7 @@ namespace NextPassAPI.Services
                 PasswordChangeReminder = credentialRequest.PasswordChangeReminder,
                 PasswordStrength = credentialRequest.PasswordStrength ?? "weak",
                 SiteUrl = credentialRequest.SiteUrl,
-                Category=credentialRequest.Category,
+                Category = credentialRequest.Category,
                 EmailId = credentialRequest.EmailId,
                 Password = encryptedPassword,
                 PhoneNumber = credentialRequest.PhoneNumber,
@@ -55,7 +55,7 @@ namespace NextPassAPI.Services
                 UserName = credentialRequest.UserName,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
-                
+
             };
 
             return await _credentialRepository.CreateCredentialAsync(newCredential);
@@ -83,6 +83,40 @@ namespace NextPassAPI.Services
             return await _credentialRepository.DeleteCredentialAsync(credentialId);
         }
 
+        public async Task<bool> InviteUserAsync(string credentialId, string invitedUserId)
+        {
+            var loginUserId = _httpContextAccessor.HttpContext?.User.FindFirst("UserId")?.Value;
+
+            if (string.IsNullOrEmpty(loginUserId))
+                throw new UnauthorizedAccessException("User not authenticated.");
+
+            if (loginUserId == invitedUserId)
+                throw new InvalidOperationException("You cannot invite yourself.");
+
+            var credential = await _credentialRepository.GetCredentialByIdAsync(credentialId);
+
+            if (credential == null || credential.UserId != loginUserId)
+                throw new UnauthorizedAccessException("You are not the owner of this credential.");
+
+            if (credential.SharedWith.Any(u => u.UserId == invitedUserId))
+                throw new InvalidOperationException("User is already invited.");
+
+            return await _credentialRepository.InviteUserAsync(loginUserId, invitedUserId, credentialId);
+        }
+        public async Task<bool> RevokeUserAccessAsync(string credentialId, string revokeUserId)
+        {
+            var loginUserId = _httpContextAccessor.HttpContext?.User.FindFirst("UserId")?.Value;
+
+            if (string.IsNullOrEmpty(loginUserId))
+                throw new UnauthorizedAccessException("User not authenticated.");
+
+            var credential = await _credentialRepository.GetCredentialByIdAsync(credentialId);
+
+            if (credential == null || credential.UserId != loginUserId)
+                throw new UnauthorizedAccessException("You are not the owner of this credential.");
+
+            return await _credentialRepository.RevokeUserAccessAsync(loginUserId, credentialId, revokeUserId);
+        }
 
     }
 }

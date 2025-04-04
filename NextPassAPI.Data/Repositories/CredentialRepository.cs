@@ -54,7 +54,12 @@ namespace NextPassAPI.Data.Repositories
                 _credential = _defaultDbContext.GetCollection();
             }
         }
-
+        public async Task<Credential> GetCredentialByIdAsync(string credentialId)
+        {
+            await GetCollectionAsync();
+            var credential = await _credential.Find(c => c.Id == credentialId).FirstOrDefaultAsync();
+            return credential;
+        }
         public async Task<CredenatialResponse> GetCredentialAsync(GetCredentialQuery query)
         {
             await GetCollectionAsync();
@@ -110,5 +115,59 @@ namespace NextPassAPI.Data.Repositories
             var result = await _credential.DeleteOneAsync(c => c.Id == credentialId);
             return result.IsAcknowledged && result.DeletedCount > 0;
         }
+        public async Task<bool> InviteUserAsync(string ownerId, string invitedUserId, string credentialId)
+        {
+            await GetCollectionAsync();
+
+            if (ownerId == invitedUserId)
+                return false; // User can't invite themselves
+
+            var credential = await _credential.Find(c => c.Id == credentialId).FirstOrDefaultAsync();
+            if (credential == null || credential.UserId != ownerId)
+                return false; // Credential doesn't exist or requester is not the owner
+
+            if (credential.SharedWith.Any(u => u.UserId == invitedUserId))
+                return false; // Already invited
+
+            var invitedUser = await _userRepository.GetUserById(invitedUserId);
+            if (invitedUser == null)
+                return false;
+
+            var sharedUser = new SharedUser
+            {
+                UserId = invitedUserId,
+                Username = invitedUser.FirstName + " " + invitedUser.LastName,
+                Profile = invitedUser.ProfilePicture
+            };
+            var update = Builders<Credential>.Update.AddToSet(c => c.SharedWith, sharedUser);
+            var result = await _credential.UpdateOneAsync(c => c.Id == credentialId, update);
+            return result.IsAcknowledged && result.ModifiedCount > 0;
+        }
+
+
+        public async Task<bool> CanUserEditCredentialAsync(string credentialId, string currentUserId)
+        {
+            await GetCollectionAsync();
+            var credential = await _credential.Find(c => c.Id == credentialId).FirstOrDefaultAsync();
+            if (credential == null) return false;
+            bool isOwner = credential.UserId == currentUserId;
+            bool isShared = credential.SharedWith.Any(u => u.UserId == currentUserId);
+            return isOwner || isShared;
+        }
+        public async Task<bool> RevokeUserAccessAsync(string ownerId, string credentialId, string revokeUserId)
+        {
+            await GetCollectionAsync();
+
+            var credential = await _credential.Find(c => c.Id == credentialId).FirstOrDefaultAsync();
+
+            if (credential == null || credential.UserId != ownerId)
+                return false; // Only owner can revoke access
+
+            var update = Builders<Credential>.Update.PullFilter(c => c.SharedWith, u => u.UserId == revokeUserId);
+            var result = await _credential.UpdateOneAsync(c => c.Id == credentialId, update);
+
+            return result.IsAcknowledged && result.ModifiedCount > 0;
+        }
+
     }
 }

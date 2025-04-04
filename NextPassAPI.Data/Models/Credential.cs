@@ -36,7 +36,7 @@ namespace NextPassAPI.Data.Models
         public List<TrustedDevice>? TrustedDevices { get; set; } = new List<TrustedDevice>();
         public string? BackupEmail { get; set; }
         public string? Notes { get; set; }
-        public List<ObjectId>? SharedWith { get; set; } = new List<ObjectId>();
+        public List<SharedUser>? SharedWith { get; set; } = new List<SharedUser>();
         public string? Category { get; set; } = "Uncaterized";
     }
 

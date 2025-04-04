@@ -7,9 +7,12 @@ namespace NextPassAPI.Services.Interfaces
 {
     public interface ICredentialService
     {
-            Task<CredenatialResponse> GetCredentialAsync(GetCredentialQuery query);
-            Task<Credential> CreateCredentialAsnyc(CredentialRequest credentialRequest);
-            Task<bool> UpdateCredentialAsync(CredentialRequest credentialRequest);
-            Task<bool> DeleteCredentialAsync(string credentialId);
+        Task<CredenatialResponse> GetCredentialAsync(GetCredentialQuery query);
+        Task<Credential> CreateCredentialAsnyc(CredentialRequest credentialRequest);
+        Task<bool> UpdateCredentialAsync(CredentialRequest credentialRequest);
+        Task<bool> DeleteCredentialAsync(string credentialId);
+        Task<bool> InviteUserAsync(string credentialId, string invitedUserId);
+        Task<bool> RevokeUserAccessAsync(string credentialId, string revokeUserId);
+
     }
 }

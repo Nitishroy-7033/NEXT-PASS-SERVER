@@ -42,6 +42,8 @@ namespace NextPassAPI.Services
                 IsVerified = false,
                 IsDeleted = false,
                 Role = "User",
+                AccountSetupStatus = "AccountCreated",
+                AccountStatus = "Active"
             };
             return await _userRepository.CreateUser(user);
         }

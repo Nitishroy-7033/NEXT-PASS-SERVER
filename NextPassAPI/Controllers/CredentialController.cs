@@ -22,7 +22,7 @@ namespace NextPassAPI.Controllers
         }
 
 
-        
+
         [HttpGet]
         public async Task<IActionResult> GetCredentials([FromQuery] GetCredentialQuery query)
         {
@@ -96,5 +96,48 @@ namespace NextPassAPI.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, errorResponse);
             }
         }
+        [HttpPost("{credentialId}/invite/{invitedUserId}")]
+        public async Task<IActionResult> InviteUser(string credentialId, string invitedUserId)
+        {
+            try
+            {
+                var success = await _credentialService.InviteUserAsync(credentialId, invitedUserId);
+                if (!success)
+                {
+                    var errorResponse = new ApiResponse<bool>(false, "Failed to invite user", false);
+                    return BadRequest(errorResponse);
+                }
+
+                var response = new ApiResponse<bool>(true, "User invited successfully", true);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = new ApiResponse<string>(false, "An error occurred while inviting the user", ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, errorResponse);
+            }
+        }
+
+        [HttpPost("{credentialId}/revoke/{revokedUserId}")]
+        public async Task<IActionResult> RevokeUserAccess(string credentialId, string revokedUserId)
+        {
+            try
+            {
+                var success = await _credentialService.RevokeUserAccessAsync(credentialId, revokedUserId);
+                if (!success)
+                {
+                    var errorResponse = new ApiResponse<bool>(false, "Failed to revoke user access", false);
+                    return BadRequest(errorResponse);
+                }
+                var response = new ApiResponse<bool>(true, "User access revoked successfully", true);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = new ApiResponse<string>(false, "An error occurred while revoking the user access", ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, errorResponse);
+            }
+        }
+
     }
 }
