@@ -102,10 +102,10 @@ namespace NextPassAPI.Data.Repositories
             return newCredential;
         }
 
-        public async Task<bool> UpdateCredentialAsync(Credential updatedCredential)
+        public async Task<bool> UpdateCredentialAsync(string id ,Credential updatedCredential)
         {
             await GetCollectionAsync();
-            var result = await _credential.ReplaceOneAsync(c => c.Id == updatedCredential.Id, updatedCredential);
+            var result = await _credential.ReplaceOneAsync(c => c.Id == id, updatedCredential);
             return result.IsAcknowledged && result.ModifiedCount > 0;
         }
 

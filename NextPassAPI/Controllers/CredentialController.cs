@@ -56,11 +56,11 @@ namespace NextPassAPI.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateCredential([FromBody] CredentialRequest credentialRequest)
+        public async Task<IActionResult> UpdateCredential([FromQuery]string credentialId, [FromBody] CredentialRequest credentialRequest)
         {
             try
             {
-                var success = await _credentialService.UpdateCredentialAsync(credentialRequest);
+                var success = await _credentialService.UpdateCredentialAsync(credentialId,credentialRequest);
                 if (!success)
                 {
                     var errorResponse = new ApiResponse<bool>(false, "Failed to update credential", false);

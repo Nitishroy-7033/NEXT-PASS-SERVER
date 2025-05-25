@@ -61,7 +61,7 @@ namespace NextPassAPI.Services
             return await _credentialRepository.CreateCredentialAsync(newCredential);
         }
 
-        public async Task<bool> UpdateCredentialAsync(CredentialRequest credentialRequest)
+        public async Task<bool> UpdateCredentialAsync(string id ,CredentialRequest credentialRequest)
         {
 
             var updatedCredential = new Credential
@@ -75,7 +75,7 @@ namespace NextPassAPI.Services
                 UpdatedAt = DateTime.UtcNow
             };
 
-            return await _credentialRepository.UpdateCredentialAsync(updatedCredential);
+            return await _credentialRepository.UpdateCredentialAsync(id,updatedCredential);
         }
 
         public async Task<bool> DeleteCredentialAsync(string credentialId)

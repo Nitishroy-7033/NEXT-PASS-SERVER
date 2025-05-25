@@ -13,7 +13,7 @@ namespace NextPassAPI.Data.Repositories.Interfaces
     {
         Task<CredenatialResponse> GetCredentialAsync(GetCredentialQuery query);
         Task<Credential> CreateCredentialAsync(Credential newCredential);
-        Task<bool> UpdateCredentialAsync(Credential updatedCredential);
+        Task<bool> UpdateCredentialAsync(string id,Credential updatedCredential);
         Task<bool> DeleteCredentialAsync(string credentialId);
         Task<bool> CanUserEditCredentialAsync(string credentialId, string currentUserId);
         Task<bool> InviteUserAsync(string ownerId, string invitedUserId, string credentialId);
