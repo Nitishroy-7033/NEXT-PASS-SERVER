@@ -14,6 +14,7 @@ namespace NextPassAPI.Data.Repositories
         {
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<ICredentialRepository, CredentialRepository>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
         }
     }
 }

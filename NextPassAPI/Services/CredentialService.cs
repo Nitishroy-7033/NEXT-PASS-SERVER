@@ -15,19 +15,38 @@ namespace NextPassAPI.Services
         private readonly ICredentialRepository _credentialRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUserRepository _userRepository;
+        private readonly INotificationService _notificationService;
 
         public CredentialService(ICredentialRepository credentialRepository, IHttpContextAccessor httpContextAccessor,
-            IUserRepository userRepository)
+            IUserRepository userRepository, INotificationService notificationService)
         {
             _credentialRepository = credentialRepository;
             _userRepository = userRepository;
             _httpContextAccessor = httpContextAccessor;
+            _notificationService = notificationService;
         }
 
 
         public async Task<CredenatialResponse> GetCredentialAsync(GetCredentialQuery query)
         {
-            return await _credentialRepository.GetCredentialAsync(query);
+            var result = await _credentialRepository.GetCredentialAsync(query);
+            
+            // Log access for each credential viewed
+            var userId = _httpContextAccessor.HttpContext?.User.FindFirst("UserId")?.Value;
+            if (!string.IsNullOrEmpty(userId) && result.Credentials?.Any() == true)
+            {
+                foreach (var credential in result.Credentials)
+                {
+                    await _notificationService.LogPasswordAccessAsync(
+                        userId, 
+                        credential.Id, 
+                        credential.Title, 
+                        AccessType.View
+                    );
+                }
+            }
+            
+            return result;
         }
 
         public async Task<Credential> CreateCredentialAsnyc(CredentialRequest credentialRequest)
@@ -43,7 +62,7 @@ namespace NextPassAPI.Services
             var newCredential = new Credential
             {
                 UserId = userId,
-                Title = credentialRequest.Title ?? credentialRequest.EmailId,
+                Title = credentialRequest.Title ?? credentialRequest.EmailId ?? "Untitled",
                 PasswordChangeReminder = credentialRequest.PasswordChangeReminder,
                 PasswordStrength = credentialRequest.PasswordStrength ?? "weak",
                 SiteUrl = credentialRequest.SiteUrl,
@@ -55,10 +74,14 @@ namespace NextPassAPI.Services
                 UserName = credentialRequest.UserName,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
-
             };
 
-            return await _credentialRepository.CreateCredentialAsync(newCredential);
+            var result = await _credentialRepository.CreateCredentialAsync(newCredential);
+            
+            // Create notification for credential creation
+            await _notificationService.NotifyCredentialCreatedAsync(userId, result.Title);
+            
+            return result;
         }
 
         public async Task<bool> UpdateCredentialAsync(string id ,CredentialRequest credentialRequest)
@@ -98,7 +121,7 @@ namespace NextPassAPI.Services
             if (credential == null || credential.UserId != loginUserId)
                 throw new UnauthorizedAccessException("You are not the owner of this credential.");
 
-            if (credential.SharedWith.Any(u => u.UserId == invitedUserId))
+            if (credential.SharedWith?.Any(u => u.UserId == invitedUserId) == true)
                 throw new InvalidOperationException("User is already invited.");
 
             return await _credentialRepository.InviteUserAsync(loginUserId, invitedUserId, credentialId);

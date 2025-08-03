@@ -14,17 +14,25 @@ namespace NextPassAPI.Services
 
         private readonly IUserRepository _userRepository;
         private readonly AuthHandler _authHandler;
+        private readonly INotificationService _notificationService;
 
-        public AuthService(IUserRepository userRepository, AuthHandler authHandler)
+        public AuthService(IUserRepository userRepository, AuthHandler authHandler, INotificationService notificationService)
         {
             _userRepository = userRepository;
             _authHandler = authHandler;
+            _notificationService = notificationService;
         }
 
         public async Task<User?> LoginUser(string email, string password)
         {
             var user = await _userRepository.GetUserByEmail(email);
-            return user != null && _authHandler.VerifyPassword(password, user.HashedPassword) ? user : null;
+            if (user != null && _authHandler.VerifyPassword(password, user.HashedPassword))
+            {
+                // Log the login event
+                await _notificationService.NotifyUserLoginAsync(user.Id);
+                return user;
+            }
+            return null;
         }
 
         public async Task<User> RegisterUser(UserRequest request)

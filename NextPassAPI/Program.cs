@@ -95,6 +95,9 @@ builder.Services.AddScoped(typeof(MongoDbContext<>));
 builder.Services.AddServices();
 builder.Services.AddRepositories();
 builder.Services.AddHttpContextAccessor();
+
+// Add Background Service for password monitoring
+builder.Services.AddHostedService<PasswordMonitoringService>();
 var app = builder.Build();
 
 // Configure CORS with specific origins for security

@@ -14,6 +14,7 @@ namespace NextPassAPI.Services
             services.AddScoped<ICredentialService, CredentialService>();
             services.AddScoped<IPasswordHelperService, PasswordHelperService>();
             services.AddScoped<ICredentialLeakChecker,CredentialLeakChecker>();
+            services.AddScoped<INotificationService, NotificationService>();
 
         }
     }
