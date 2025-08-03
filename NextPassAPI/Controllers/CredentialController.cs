@@ -6,12 +6,15 @@ using NextPassAPI.Data.Models.Requests;
 using NextPassAPI.Data.Models.Responses;
 using NextPassAPI.Data.Models;
 using NextPassAPI.Services.Interfaces;
+using Microsoft.AspNetCore.RateLimiting;
+using System.ComponentModel.DataAnnotations;
 
 namespace NextPassAPI.Controllers
 {
     [Route("Credential")]
     [ApiController]
     [Authorize]
+    [EnableRateLimiting("GeneralPolicy")]
     public class CredentialController : ControllerBase
     {
         private readonly ICredentialService _credentialService;
@@ -56,11 +59,11 @@ namespace NextPassAPI.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateCredential([FromQuery]string credentialId, [FromBody] CredentialRequest credentialRequest)
+        public async Task<IActionResult> UpdateCredential([FromQuery] string credentialId, [FromBody] CredentialRequest credentialRequest)
         {
             try
             {
-                var success = await _credentialService.UpdateCredentialAsync(credentialId,credentialRequest);
+                var success = await _credentialService.UpdateCredentialAsync(credentialId, credentialRequest);
                 if (!success)
                 {
                     var errorResponse = new ApiResponse<bool>(false, "Failed to update credential", false);

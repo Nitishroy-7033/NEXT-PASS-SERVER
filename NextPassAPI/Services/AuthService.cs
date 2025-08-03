@@ -50,7 +50,7 @@ namespace NextPassAPI.Services
 
         public static string GenerateSecureKey()
         {
-            using (var rng = new RNGCryptoServiceProvider())
+            using (var rng = RandomNumberGenerator.Create())
             {
                 byte[] keyBytes = new byte[32]; // 32 bytes for AES-256
                 rng.GetBytes(keyBytes);

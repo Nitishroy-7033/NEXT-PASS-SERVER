@@ -7,6 +7,8 @@ using NextPassAPI.Data.Repositories;
 using NextPassAPI.Identity.AuthHandler;
 using NextPassAPI.Services;
 using System.Text;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -60,9 +62,30 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+            ClockSkew = TimeSpan.Zero // Reduce token lifetime tolerance
         };
     });
+
+// Add Rate Limiting
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("AuthPolicy", options =>
+    {
+        options.PermitLimit = 5; // 5 requests
+        options.Window = TimeSpan.FromMinutes(1); // per minute
+        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        options.QueueLimit = 2;
+    });
+
+    options.AddFixedWindowLimiter("GeneralPolicy", options =>
+    {
+        options.PermitLimit = 100; // 100 requests
+        options.Window = TimeSpan.FromMinutes(1); // per minute
+        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        options.QueueLimit = 10;
+    });
+});
 
 // Mongodb 
 builder.Services.Configure<MongoDbConfigs>(builder.Configuration.GetSection("MongodbConfigs"));
@@ -73,15 +96,35 @@ builder.Services.AddServices();
 builder.Services.AddRepositories();
 builder.Services.AddHttpContextAccessor();
 var app = builder.Build();
+
+// Configure CORS with specific origins for security
 app.UseCors(policy => policy
-    .AllowAnyOrigin()
+     .AllowAnyOrigin()
+    .AllowCredentials()
     .AllowAnyMethod()
     .AllowAnyHeader());
-app.UseSwagger();
-app.UseSwaggerUI();
+
+// Only show Swagger in development
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+// Security headers
+app.Use(async (context, next) =>
+{
+    context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+    context.Response.Headers["X-Frame-Options"] = "DENY";
+    context.Response.Headers["X-XSS-Protection"] = "1; mode=block";
+    context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+    context.Response.Headers.Remove("Server");
+    await next();
+});
 
 app.UseHttpsRedirection();
-
+app.UseRateLimiter(); // Add rate limiting middleware
+app.UseAuthentication(); // Must come before UseAuthorization
 app.UseAuthorization();
 
 app.MapControllers();
