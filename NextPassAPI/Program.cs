@@ -103,7 +103,6 @@ var app = builder.Build();
 // Configure CORS with specific origins for security
 app.UseCors(policy => policy
      .AllowAnyOrigin()
-    .AllowCredentials()
     .AllowAnyMethod()
     .AllowAnyHeader());
 
